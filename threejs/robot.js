@@ -35,18 +35,31 @@ function gen_robot() {
     
 
     // left: upper leg, leg, foot
-    // TO DO
+    var left_upper_leg = gen_rect(1.75, 4);
+    left_upper_leg.name = "left_upper_leg";
+    var left_lower_leg = gen_rect(1.5, 3);
+    left_lower_leg.name = "lower_leg";
+    var left_foot = gen_rect(1.75,1);
+    left_foot.name = "foot";
+    left_upper_leg.add(left_lower_leg);
+    left_lower_leg.add(left_foot);
+    left_foot.position.y = -1.5;
+    left_lower_leg.position.y = -3.2;
+    left_upper_leg.position.y = -5;
+    left_upper_leg.position.x = -1.2;
 
     // right: upper leg, leg, foot
-    // TO DO
+    var right_upper_leg = left_upper_leg.clone();
+    right_upper_leg.name = "right_upper_leg";
+    right_upper_leg.position.x = 1.2;
 
     // Creating hieararchy
     robot.add(torso);
     torso.add(right_upper_arm);
     torso.add(head);
     torso.add(left_upper_arm);
-    // TO DO: add remaining robot parts hierarchical relations
-
+    torso.add(left_upper_leg);
+    torso.add(right_upper_leg);
 
     robot.name = "robot";
 
