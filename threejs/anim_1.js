@@ -28,8 +28,8 @@ function rotateAroundPivot(pivot_x, pivot_y, angle, element){
 Object.assign( WaveAnimation.prototype, {
 
     init: function() {
-        let upperArmTween = new TWEEN.Tween( {theta:0, shoulder: 2.6} )
-            .to( {theta:Math.PI/2, shoulder:2.1 }, 500)
+        let upperArmTween = new TWEEN.Tween( {theta:0} )
+            .to( {theta:Math.PI/2}, 500)
             .onUpdate(function(){
                 let right_upper_arm = robot.getObjectByName("right_upper_arm");
 
@@ -45,56 +45,120 @@ Object.assign( WaveAnimation.prototype, {
                 stats.update();
                 renderer.render(scene, camera);    
             })
-        // Here you may include animations for other parts 
         
-        // let lowerArmTween = new TWEEN.Tween( {theta:0, elbow: 0} )
-        //     .to( {theta: Math.PI/2, elbow: 1}, 500)
-        //     .onUpdate(function(){
-        //         let right_lower_arm =  robot.getObjectByName("right_upper_arm").getObjectByName("lower_arm");
-        //         right_lower_arm.matrix
-        //             .makeRotationZ(this._object.theta)
-        //             .premultiply( new THREE.Matrix4().makeTranslation(this._object.elbow, -2, 0 ) );
+        let lowerArmTween = new TWEEN.Tween( {theta:0} )
+            .to( {theta: Math.PI/2}, 500)
+            .onUpdate(function(){
+                let right_lower_arm = robot.getObjectByName("right_upper_arm").getObjectByName("lower_arm");
+                
+                rotateAroundPivot(0, 1.5, this._object.theta, right_lower_arm);
 
-        //         // Updating final world matrix (with parent transforms) - mandatory
-        //         right_lower_arm.updateMatrixWorld(true);
-        //         // Updating screen
-        //         stats.update();
-        //         renderer.render(scene, camera);    
-        //     })
+                right_lower_arm.matrixAutoUpdate = false;
 
-        // let handTweenToLeft = new TWEEN.Tween( {theta:0} )
-        // .to( {theta: Math.PI/5.3}, 500)
-        // .onUpdate(function(){
-        //     let right_hand =  robot.getObjectByName("right_upper_arm").getObjectByName("hand");
-        //     right_hand.matrix
-        //         .makeRotationZ(this._object.theta)
-        //         .premultiply( new THREE.Matrix4().makeTranslation(0, -1.5, 0 ) );
+                // Updating final world matrix (with parent transforms) - mandatory
+                right_lower_arm.updateMatrixWorld(true);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
 
-        //     // Updating final world matrix (with parent transforms) - mandatory
-        //     right_hand.updateMatrixWorld(true);
-        //     // Updating screen
-        //     stats.update();
-        //     renderer.render(scene, camera);    
-        // })
+        // Por que o efeito das rotacoes nao persiste quando é com o mesmo objeto?
+        let lowerArmTweenWave = new TWEEN.Tween( {theta:(Math.PI/2)} )
+        .to( {theta: [2*(Math.PI/3), (Math.PI/2), (Math.PI/3)]}, 2000)
+        .repeat(5)
+        .yoyo(true)
+        .onUpdate(function(){
+            let right_lower_arm = robot.getObjectByName("right_upper_arm").getObjectByName("lower_arm");
+            
+            rotateAroundPivot(0, 1.5, this._object.theta, right_lower_arm);
 
-        // let handTweenToRight = new TWEEN.Tween( {theta:0} )
-        // .to( {theta: -Math.PI/5.3}, 500)
-        // .onUpdate(function(){
-        //     let right_hand =  robot.getObjectByName("right_upper_arm").getObjectByName("hand");
-        //     right_hand.matrix
-        //         .makeRotationZ(this._object.theta)
-        //         .premultiply( new THREE.Matrix4().makeTranslation(0, -1.5, 0 ) );
+            right_lower_arm.matrixAutoUpdate = false;
 
-        //     // Updating final world matrix (with parent transforms) - mandatory
-        //     right_hand.updateMatrixWorld(true);
-        //     // Updating screen
-        //     stats.update();
-        //     renderer.render(scene, camera);    
-        // })
+            // Updating final world matrix (with parent transforms) - mandatory
+            right_lower_arm.updateMatrixWorld(true);
+            // Updating screen
+            stats.update();
+            renderer.render(scene, camera);    
+        })
+
+        let handTweenToLeft = new TWEEN.Tween( {theta:0} )
+            .to( {theta: Math.PI/5.3}, 500)
+            .repeat(1)
+            .yoyo(true)
+            .onUpdate(function(){
+                let right_hand =  robot.getObjectByName("right_upper_arm").getObjectByName("hand");
+                
+                rotateAroundPivot(0.5, 0, this._object.theta, right_hand);
+
+                // right_hand.matrixAutoUpdate = false;
+
+                // Updating final world matrix (with parent transforms) - mandatory
+                right_hand.updateMatrixWorld(true);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
+        let handTweenToRight = new TWEEN.Tween( {theta:0} )
+            .to( {theta: -Math.PI/5.3}, 500)
+            .repeat(1)
+            .yoyo(true)
+            .onUpdate(function(){
+                let right_hand =  robot.getObjectByName("right_upper_arm").getObjectByName("hand");
+
+                rotateAroundPivot(-0.5, 0, this._object.theta, right_hand);
+
+                right_hand.matrixAutoUpdate = false;
+
+                // Updating final world matrix (with parent transforms) - mandatory
+                right_hand.updateMatrixWorld(true);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
+        let lowerArmLeft = new TWEEN.Tween( {theta:0} )
+        .to( {theta: -Math.PI/24}, 1000)
+        .repeat(5)
+        .yoyo(true)
+        .onUpdate(function(){
+            let left_lower_arm = robot.getObjectByName("left_upper_arm").getObjectByName("lower_arm");
+            
+            rotateAroundPivot(0, 1.5, this._object.theta, left_lower_arm);
+
+            left_lower_arm.matrixAutoUpdate = false;
+
+            // Updating final world matrix (with parent transforms) - mandatory
+            left_lower_arm.updateMatrixWorld(true);
+            // Updating screen
+            stats.update();
+            renderer.render(scene, camera);    
+        })
+
+        let leftHandTween = new TWEEN.Tween( {theta:0} )
+            .to( {theta: -Math.PI/6}, 1000)
+            .repeat(1)
+            .yoyo(true)
+            .onUpdate(function(){
+                let left_hand =  robot.getObjectByName("left_upper_arm").getObjectByName("hand");
+
+                rotateAroundPivot(-0.5, 0, this._object.theta, left_hand);
+
+                left_hand.matrixAutoUpdate = false;
+
+                // Updating final world matrix (with parent transforms) - mandatory
+                left_hand.updateMatrixWorld(true);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
         
-        // upperArmTween.chain(lowerArmTween);
-        // lowerArmTween.chain(handTweenToLeft);
-        // handTweenToLeft.chain(handTweenToRight);
+        
+        upperArmTween.chain(lowerArmTween);
+        lowerArmTween.chain(handTweenToLeft, lowerArmTweenWave, lowerArmLeft, leftHandTween);
+        handTweenToLeft.chain(handTweenToRight);
+        handTweenToRight.chain(handTweenToLeft);
         //  upperArmTween.chain( ... ); this allows other related Tween animations occur at the same time
         upperArmTween.start();       
     },
