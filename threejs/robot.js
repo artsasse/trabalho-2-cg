@@ -37,14 +37,14 @@ function gen_robot() {
     // left: upper leg, leg, foot
     var left_upper_leg = gen_rect(1.75, 4);
     left_upper_leg.name = "left_upper_leg";
-    var left_lower_leg = gen_rect(1.5, 3);
+    var left_lower_leg = gen_rect(1.5, 3.5);
     left_lower_leg.name = "lower_leg";
     var left_foot = gen_rect(1.75,1);
     left_foot.name = "foot";
     left_upper_leg.add(left_lower_leg);
     left_lower_leg.add(left_foot);
     left_foot.position.y = -1.5;
-    left_lower_leg.position.y = -3.2;
+    left_lower_leg.position.y = -3.7;
     left_upper_leg.position.y = -5;
     left_upper_leg.position.x = -1.2;
 
