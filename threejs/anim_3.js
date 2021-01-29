@@ -2,7 +2,17 @@ function DanceAnimation() {}
 
 function rotateAroundPivot(pivot_x, pivot_y, angle, element){
     ele_mat = element.matrix;
+    console.log(ele_mat);
     ele_mat.makeRotationZ(angle);
+    
+    // id_mat = new THREE.Matrix4().identity();
+
+    // rot_mat = new THREE.Matrix4().makeRotationZ(angle);
+
+    // ele_mat = element.matrix;
+
+    // ele_mat = ele_mat.premultiply(rot_mat);
+
 
     // Como o método makeRotationZ reseta a matriz local do objeto, temos que restaurar
     // as coordenadas antigas dele com uma translacao.
@@ -25,22 +35,112 @@ function rotateAroundPivot(pivot_x, pivot_y, angle, element){
     ele_mat.premultiply(translate_mat);
 }
 
+function rotateRightUpperLeg(angle){
+    let part = robot.getObjectByName("right_upper_leg");       
+    rotateAroundPivot(0, 2, angle, part);
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
+}
+
+function rotateLeftUpperLeg(angle){
+    let part = robot.getObjectByName("left_upper_leg");       
+    rotateAroundPivot(0, 2, angle, part); //o valor de pivot ta certo?
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
+}
+
+function rotateRightLowerLeg(angle){
+    let part = robot.getObjectByName("right_upper_leg").getObjectByName("lower_leg");       
+    rotateAroundPivot(0, 1.75, angle, part); //o valor de pivot ta certo?
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
+}
+
+function rotateLeftLowerLeg(angle){
+    let part = robot.getObjectByName("left_upper_leg").getObjectByName("lower_leg");       
+    rotateAroundPivot(0, 1.75, angle, part); //o valor de pivot ta certo?
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
+}
+
+function rotateRightUpperArm(angle){
+    let part = robot.getObjectByName("right_upper_arm");       
+    rotateAroundPivot(-0.5, 1.8, angle, part);
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
+}
+
+function rotateLeftUpperArm(angle){
+    let part = robot.getObjectByName("left_upper_arm");       
+    rotateAroundPivot(0.5, 1.8, angle, part);
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
+}
+
+function rotateRightLowerArm(angle){
+    let part = robot.getObjectByName("right_upper_arm").getObjectByName("lower_arm");       
+    rotateAroundPivot(0.5, 1.5, angle, part);
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
+}
+
+function rotateLeftLowerArm(angle){
+    let part = robot.getObjectByName("left_upper_arm").getObjectByName("lower_arm");       
+    rotateAroundPivot(-0.5, 1.5, angle, part);
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
+}
+
+function rotateTorso(angle){
+    let part = robot.getObjectByName("torso");       
+    rotateAroundPivot(0, 0, angle, part);
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
+}
+
+function rotateTorsoWithMomentum(angle){
+    rotateTorso(angle);
+    rotateLeftUpperArm(-angle);
+    rotateRightUpperArm(-angle);
+    rotateLeftUpperLeg(-angle);
+    rotateRightUpperLeg(-angle);
+}
+
+
 Object.assign( DanceAnimation.prototype, {
 
     init: function() {
         let rightUpperArm1 = new TWEEN.Tween( {theta:0} )
             .to( {theta: Math.PI/1.7}, 1000)
             .onUpdate(function(){
-                let right_upper_arm = robot.getObjectByName("right_upper_arm");
-
-                rotateAroundPivot(-0.5, 1.8, this._object.theta, right_upper_arm);
-
-                // Segundo os docs do three.js é importante setar para false para evitar problemas
-                // quando mexemos diretamente com as matrizes dos objetos.
-                right_upper_arm.matrixAutoUpdate = false;
-
-                // Updating final world matrix (with parent transforms) - mandatory
-                right_upper_arm.updateMatrixWorld(true);
+                rotateRightUpperArm(this._object.theta);
                 // Updating screen
                 stats.update();
                 renderer.render(scene, camera);    
@@ -49,14 +149,7 @@ Object.assign( DanceAnimation.prototype, {
         let rightLowerArm1 = new TWEEN.Tween( {theta:0} )
             .to( {theta: 3*Math.PI/4}, 500)
             .onUpdate(function(){
-                let right_lower_arm = robot.getObjectByName("right_upper_arm").getObjectByName("lower_arm");
-                
-                rotateAroundPivot(0.5, 1.5, this._object.theta, right_lower_arm);
-
-                right_lower_arm.matrixAutoUpdate = false;
-
-                // Updating final world matrix (with parent transforms) - mandatory
-                right_lower_arm.updateMatrixWorld(true);
+                rotateRightLowerArm(this._object.theta);
                 // Updating screen
                 stats.update();
                 renderer.render(scene, camera);    
@@ -65,16 +158,7 @@ Object.assign( DanceAnimation.prototype, {
         let leftUpperArm1 = new TWEEN.Tween( {theta:0} )
             .to( {theta: -Math.PI/1.7}, 1000)
             .onUpdate(function(){
-                let part = robot.getObjectByName("left_upper_arm");
-
-                rotateAroundPivot(0.5, 1.8, this._object.theta, part);
-
-                // Segundo os docs do three.js é importante setar para false para evitar problemas
-                // quando mexemos diretamente com as matrizes dos objetos.
-                part.matrixAutoUpdate = false;
-
-                // Updating final world matrix (with parent transforms) - mandatory
-                part.updateMatrixWorld(true);
+                rotateLeftUpperArm(this._object.theta);
                 // Updating screen
                 stats.update();
                 renderer.render(scene, camera);    
@@ -83,14 +167,7 @@ Object.assign( DanceAnimation.prototype, {
         let leftLowerArm1 = new TWEEN.Tween( {theta:0} )
             .to( {theta: -3*Math.PI/4}, 500)
             .onUpdate(function(){
-                let part = robot.getObjectByName("left_upper_arm").getObjectByName("lower_arm");
-                
-                rotateAroundPivot(-0.5, 1.5, this._object.theta, part);
-
-                part.matrixAutoUpdate = false;
-
-                // Updating final world matrix (with parent transforms) - mandatory
-                part.updateMatrixWorld(true);
+                rotateLeftLowerArm(this._object.theta);
                 // Updating screen
                 stats.update();
                 renderer.render(scene, camera);    
@@ -99,23 +176,29 @@ Object.assign( DanceAnimation.prototype, {
         let rightUpperLeg1 = new TWEEN.Tween( {theta:0} )
             .to( {theta: Math.PI/6}, 500)
             .onUpdate(function(){
-                let part = robot.getObjectByName("right_upper_leg");
                 
-                rotateAroundPivot(0, 2, this._object.theta, part);
+                rotateRightUpperLeg(this._object.theta);
 
-                part.matrixAutoUpdate = false;
-
-                // Updating final world matrix (with parent transforms) - mandatory
-                part.updateMatrixWorld(true);
                 // Updating screen
                 stats.update();
                 renderer.render(scene, camera);    
             })
-        
+
+        let torso1 = new TWEEN.Tween( {theta:0} )
+            .to( {theta: Math.PI/6}, 500)
+            .onUpdate(function(){
+                rotateTorsoWithMomentum(this._object.theta);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
+        rightUpperLeg1.chain(torso1);
         leftLowerArm1.chain(rightUpperLeg1);
         rightLowerArm1.chain(leftUpperArm1, leftLowerArm1);
         rightUpperArm1.chain(rightLowerArm1);
-        rightUpperArm1.start();       
+        rightUpperArm1.start(); 
+        // torso1.start();      
     },
     animate: function(time) {
         window.requestAnimationFrame(this.animate.bind(this));
