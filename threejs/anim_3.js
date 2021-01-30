@@ -2,7 +2,6 @@ function DanceAnimation() {}
 
 function rotateAroundPivot(pivot_x, pivot_y, angle, element){
     ele_mat = element.matrix;
-    console.log(ele_mat);
     ele_mat.makeRotationZ(angle);
     
     // id_mat = new THREE.Matrix4().identity();
@@ -125,20 +124,49 @@ function rotateTorso(angle){
     part.updateMatrixWorld(true);
 }
 
-function rotateTorsoWithMomentum(angle){
-    rotateTorso(angle);
-    rotateLeftUpperArm(-angle);
-    rotateRightUpperArm(-angle);
-    rotateLeftUpperLeg(-angle);
-    rotateRightUpperLeg(-angle);
+function translateElement(x, y, z, element){
+    ele_mat = element.matrix;
+    translate_mat = new THREE.Matrix4().makeTranslation(x, y, z);
+    ele_mat.premultiply(translate_mat);
+} 
+
+function translateHeadX(x){
+    let part = robot.getObjectByName("head");      
+
+    // translateElement(x, y, z, part);
+    part_mat = part.matrix;
+    part_mat.makeTranslation(x,part.position.y,part.position.z);
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
 }
+
+// function rotateTorsoWithMomentum(angle){
+//     rotateTorso(angle);
+//     rotateLeftUpperArm(-angle -Math.PI/1.7);
+//     rotateRightUpperArm(-angle);
+//     rotateLeftUpperLeg(-angle);
+//     rotateRightUpperLeg(-angle);
+// }
 
 
 Object.assign( DanceAnimation.prototype, {
 
     init: function() {
+        // ------------ PARTE 1 - INICIO ------------
         let rightUpperArm1 = new TWEEN.Tween( {theta:0} )
             .to( {theta: Math.PI/1.7}, 1000)
+            .onUpdate(function(){
+                rotateRightUpperArm(this._object.theta);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
+        let rightUpperArm2 = new TWEEN.Tween( {theta: Math.PI/1.7} )
+            .to( {theta: 0}, 1000)
             .onUpdate(function(){
                 rotateRightUpperArm(this._object.theta);
                 // Updating screen
@@ -155,8 +183,46 @@ Object.assign( DanceAnimation.prototype, {
                 renderer.render(scene, camera);    
             })
 
+        let rightLowerArm2 = new TWEEN.Tween( {theta:3*Math.PI/4} )
+            .to( {theta: 0}, 500)
+            .onUpdate(function(){
+                rotateRightLowerArm(this._object.theta);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
+        let headLeft1 = new TWEEN.Tween( {new_x:0} )
+            .to( {new_x: -4}, 500)
+            .repeat(1)
+            .yoyo(true)
+            // .repeatDelay(2000)
+            .onUpdate(function(){
+                
+                translateHeadX(this._object.new_x, 0, 0);
+
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
+        // ------------ PARTE 1 - FIM ------------
+
+        // ...
+
+        // ------------ PARTE 2 - INICIO ------------
+
         let leftUpperArm1 = new TWEEN.Tween( {theta:0} )
             .to( {theta: -Math.PI/1.7}, 1000)
+            .onUpdate(function(){
+                rotateLeftUpperArm(this._object.theta);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
+        let leftUpperArm2 = new TWEEN.Tween( {theta:-Math.PI/1.7} )
+            .to( {theta: 0}, 1000)
             .onUpdate(function(){
                 rotateLeftUpperArm(this._object.theta);
                 // Updating screen
@@ -173,6 +239,31 @@ Object.assign( DanceAnimation.prototype, {
                 renderer.render(scene, camera);    
             })
 
+        let leftLowerArm2 = new TWEEN.Tween( {theta:-3*Math.PI/4} )
+            .to( {theta: 0}, 500)
+            .onUpdate(function(){
+                rotateLeftLowerArm(this._object.theta);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
+        let headRight1 = new TWEEN.Tween( {new_x:0} )
+            .to( {new_x: 12}, 500)
+            .repeat(1)
+            .yoyo(true)
+            // .repeatDelay(2000)
+            .onUpdate(function(){
+                
+                translateHeadX(this._object.new_x, 0, 0);
+
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
+        // ------------ PARTE 2 - FIM ------------
+
         let rightUpperLeg1 = new TWEEN.Tween( {theta:0} )
             .to( {theta: Math.PI/6}, 500)
             .onUpdate(function(){
@@ -184,21 +275,27 @@ Object.assign( DanceAnimation.prototype, {
                 renderer.render(scene, camera);    
             })
 
-        let torso1 = new TWEEN.Tween( {theta:0} )
-            .to( {theta: Math.PI/6}, 500)
-            .onUpdate(function(){
-                rotateTorsoWithMomentum(this._object.theta);
-                // Updating screen
-                stats.update();
-                renderer.render(scene, camera);    
-            })
 
-        rightUpperLeg1.chain(torso1);
-        leftLowerArm1.chain(rightUpperLeg1);
-        rightLowerArm1.chain(leftUpperArm1, leftLowerArm1);
+        // let torso1 = new TWEEN.Tween( {theta:0} )
+        //     .to( {theta: Math.PI/6}, 500)
+        //     .onUpdate(function(){
+        //         rotateTorsoWithMomentum(this._object.theta);
+        //         // Updating screen
+        //         stats.update();
+        //         renderer.render(scene, camera);    
+        //     })
+
+        // PARTE 2
+        headRight1.chain(leftUpperArm2, leftLowerArm2);
+        leftLowerArm1.chain(headRight1);
+        leftUpperArm1.chain(leftLowerArm1);
+        rightLowerArm2.chain(leftUpperArm1); 
+        
+        // PARTE 1
+        headLeft1.chain(rightUpperArm2, rightLowerArm2);
+        rightLowerArm1.chain(headLeft1);
         rightUpperArm1.chain(rightLowerArm1);
         rightUpperArm1.start(); 
-        // torso1.start();      
     },
     animate: function(time) {
         window.requestAnimationFrame(this.animate.bind(this));
