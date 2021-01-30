@@ -379,8 +379,8 @@ Object.assign( DanceAnimation.prototype, {
             })
 
         let headTurn1 = new TWEEN.Tween( {new_x:0 , new_y: 4.8} )
-            .to( {new_x: [-32, -32, 80, 80], new_y: [4.8, 20, 20, 4.8]}, 4000)
-            .easing(TWEEN.Easing.Exponential.Out)
+            .to( {new_x: [-32, -32, 80, 80], new_y: [4.8, 20, 20, 4.8]}, 1000)
+            .easing(TWEEN.Easing.Quadratic.Out)
             // .repeat(1)
             // .yoyo(true)
             // .repeatDelay(2000)
