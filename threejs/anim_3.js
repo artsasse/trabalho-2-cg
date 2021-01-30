@@ -3,15 +3,6 @@ function DanceAnimation() {}
 function rotateAroundPivot(pivot_x, pivot_y, angle, element){
     ele_mat = element.matrix;
     ele_mat.makeRotationZ(angle);
-    
-    // id_mat = new THREE.Matrix4().identity();
-
-    // rot_mat = new THREE.Matrix4().makeRotationZ(angle);
-
-    // ele_mat = element.matrix;
-
-    // ele_mat = ele_mat.premultiply(rot_mat);
-
 
     // Como o método makeRotationZ reseta a matriz local do objeto, temos que restaurar
     // as coordenadas antigas dele com uma translacao.
@@ -114,9 +105,9 @@ function rotateLeftLowerArm(angle){
     part.updateMatrixWorld(true);
 }
 
-function rotateTorso(angle){
+function rotateTorso(angle, pivot_x, pivot_y){
     let part = robot.getObjectByName("torso");       
-    rotateAroundPivot(0, 0, angle, part);
+    rotateAroundPivot(pivot_x, pivot_y, angle, part);
 
     part.matrixAutoUpdate = false;
 
@@ -135,7 +126,7 @@ function translateHeadX(x){
 
     // translateElement(x, y, z, part);
     part_mat = part.matrix;
-    part_mat.makeTranslation(x,part.position.y,part.position.z);
+    part_mat.makeTranslation(x, part.position.y, part.position.z);
 
     part.matrixAutoUpdate = false;
 
@@ -143,13 +134,83 @@ function translateHeadX(x){
     part.updateMatrixWorld(true);
 }
 
-// function rotateTorsoWithMomentum(angle){
-//     rotateTorso(angle);
-//     rotateLeftUpperArm(-angle -Math.PI/1.7);
+function translateHeadY(y){
+    let part = robot.getObjectByName("head");      
+
+    // translateElement(x, y, z, part);
+    part_mat = part.matrix;
+    part_mat.makeTranslation(part.position.x, y, part.position.z);
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
+}
+
+function translateHead(x,y){
+    let part = robot.getObjectByName("head");      
+
+    // translateElement(x, y, z, part);
+    part_mat = part.matrix;
+    part_mat.makeTranslation(x, y, part.position.z);
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
+}
+
+
+// function rotateTorsoWithMomentum(angle, pivot_x, pivot_y){
+//     rotateTorso(angle, pivot_x, pivot_y);
+//     rotateLeftUpperArm(-angle);
 //     rotateRightUpperArm(-angle);
 //     rotateLeftUpperLeg(-angle);
 //     rotateRightUpperLeg(-angle);
 // }
+
+function limbsImpact(angle){
+    rotateLeftUpperArm(angle);
+    rotateRightUpperArm(angle);
+    rotateLeftUpperLeg(angle);
+    rotateRightUpperLeg(angle);
+}
+
+function translateTorsoX(x){
+    let part = robot.getObjectByName("torso");      
+
+    // translateElement(x, y, z, part);
+    part_mat = part.matrix;
+    part_mat.makeTranslation(x, part.position.y, part.position.z);
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
+}
+
+// Uma transformacao composta de rotacao e translacao que devem ser realizadas na mesma funcao
+// para que uma nao anule a outra
+function torsoImpact(x, angle){
+    let element = robot.getObjectByName("torso");
+    ele_mat = element.matrix;
+    ele_mat.makeRotationZ(angle);
+
+    // Como o método makeRotationZ reseta a matriz local do objeto, temos que restaurar
+    // as coordenadas antigas dele com uma translacao, exceto para o x que nesse caso represeta a translacao
+    // do torso no eixo x apos o impacto.
+    old_y = element.position.y;
+    old_z = element.position.z;
+    new_position_mat = new THREE.Matrix4().makeTranslation(x, old_y, old_z);
+    ele_mat.premultiply(new_position_mat);
+
+    limbsImpact(angle);
+
+    element.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    element.updateMatrixWorld(true);
+}
 
 
 Object.assign( DanceAnimation.prototype, {
@@ -167,6 +228,7 @@ Object.assign( DanceAnimation.prototype, {
 
         let rightUpperArm2 = new TWEEN.Tween( {theta: Math.PI/1.7} )
             .to( {theta: 0}, 1000)
+            .easing(TWEEN.Easing.Quadratic.Out)
             .onUpdate(function(){
                 rotateRightUpperArm(this._object.theta);
                 // Updating screen
@@ -175,7 +237,8 @@ Object.assign( DanceAnimation.prototype, {
             })
 
         let rightLowerArm1 = new TWEEN.Tween( {theta:0} )
-            .to( {theta: 3*Math.PI/4}, 500)
+            .to( {theta: 3*Math.PI/4}, 1000)
+            .easing(TWEEN.Easing.Quadratic.Out)
             .onUpdate(function(){
                 rotateRightLowerArm(this._object.theta);
                 // Updating screen
@@ -185,6 +248,7 @@ Object.assign( DanceAnimation.prototype, {
 
         let rightLowerArm2 = new TWEEN.Tween( {theta:3*Math.PI/4} )
             .to( {theta: 0}, 500)
+            .easing(TWEEN.Easing.Quadratic.Out)
             .onUpdate(function(){
                 rotateRightLowerArm(this._object.theta);
                 // Updating screen
@@ -194,6 +258,7 @@ Object.assign( DanceAnimation.prototype, {
 
         let headLeft1 = new TWEEN.Tween( {new_x:0} )
             .to( {new_x: -4}, 500)
+            .easing(TWEEN.Easing.Quadratic.Out)
             .repeat(1)
             .yoyo(true)
             // .repeatDelay(2000)
@@ -213,7 +278,8 @@ Object.assign( DanceAnimation.prototype, {
         // ------------ PARTE 2 - INICIO ------------
 
         let leftUpperArm1 = new TWEEN.Tween( {theta:0} )
-            .to( {theta: -Math.PI/1.7}, 1000)
+            .to( {theta: -Math.PI/1.7}, 800)
+            .easing(TWEEN.Easing.Quadratic.In)
             .onUpdate(function(){
                 rotateLeftUpperArm(this._object.theta);
                 // Updating screen
@@ -223,6 +289,7 @@ Object.assign( DanceAnimation.prototype, {
 
         let leftUpperArm2 = new TWEEN.Tween( {theta:-Math.PI/1.7} )
             .to( {theta: 0}, 1000)
+            .easing(TWEEN.Easing.Quadratic.Out)
             .onUpdate(function(){
                 rotateLeftUpperArm(this._object.theta);
                 // Updating screen
@@ -231,7 +298,8 @@ Object.assign( DanceAnimation.prototype, {
             })
 
         let leftLowerArm1 = new TWEEN.Tween( {theta:0} )
-            .to( {theta: -3*Math.PI/4}, 500)
+            .to( {theta: -3*Math.PI/4}, 800)
+            .easing(TWEEN.Easing.Quadratic.In)
             .onUpdate(function(){
                 rotateLeftLowerArm(this._object.theta);
                 // Updating screen
@@ -241,6 +309,7 @@ Object.assign( DanceAnimation.prototype, {
 
         let leftLowerArm2 = new TWEEN.Tween( {theta:-3*Math.PI/4} )
             .to( {theta: 0}, 500)
+            .easing(TWEEN.Easing.Quadratic.Out)
             .onUpdate(function(){
                 rotateLeftLowerArm(this._object.theta);
                 // Updating screen
@@ -250,6 +319,7 @@ Object.assign( DanceAnimation.prototype, {
 
         let headRight1 = new TWEEN.Tween( {new_x:0} )
             .to( {new_x: 12}, 500)
+            .easing(TWEEN.Easing.Quadratic.Out)
             .repeat(1)
             .yoyo(true)
             // .repeatDelay(2000)
@@ -264,38 +334,114 @@ Object.assign( DanceAnimation.prototype, {
 
         // ------------ PARTE 2 - FIM ------------
 
-        let rightUpperLeg1 = new TWEEN.Tween( {theta:0} )
-            .to( {theta: Math.PI/6}, 500)
+        // ...
+
+        // ------------ PARTE 3 - INICIO ------------
+        
+        let rightUpperArm3 = new TWEEN.Tween( {theta:0} )
+            .to( {theta: Math.PI/1.7}, 400)
+            .easing(TWEEN.Easing.Exponential.In)
+            .onUpdate(function(){
+                rotateRightUpperArm(this._object.theta);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
+        let rightUpperArm4 = new TWEEN.Tween( {theta: Math.PI/1.7} )
+            .to( {theta: 0}, 1000)
+            .easing(TWEEN.Easing.Quadratic.Out)
+            .onUpdate(function(){
+                rotateRightUpperArm(this._object.theta);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
+        let rightLowerArm3 = new TWEEN.Tween( {theta:0} )
+            .to( {theta: 3*Math.PI/4}, 400)
+            .easing(TWEEN.Easing.Exponential.In)
+            .onUpdate(function(){
+                rotateRightLowerArm(this._object.theta);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
+        let rightLowerArm4 = new TWEEN.Tween( {theta:3*Math.PI/4} )
+            .to( {theta: 0}, 500)
+            .easing(TWEEN.Easing.Quadratic.Out)
+            .onUpdate(function(){
+                rotateRightLowerArm(this._object.theta);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+
+        let headTurn1 = new TWEEN.Tween( {new_x:0 , new_y: 4.8} )
+            .to( {new_x: [-32, -32, 80, 80], new_y: [4.8, 20, 20, 4.8]}, 4000)
+            .easing(TWEEN.Easing.Exponential.Out)
+            // .repeat(1)
+            // .yoyo(true)
+            // .repeatDelay(2000)
             .onUpdate(function(){
                 
-                rotateRightUpperLeg(this._object.theta);
+                translateHead(this._object.new_x, this._object.new_y);
+
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
+        
+        let headTurn2 = new TWEEN.Tween( {new_x:80 , new_y: 4.8} )
+            .to( {new_x: 0, new_y: 4.8}, 1000)
+            .easing(TWEEN.Easing.Exponential.In)
+            // .repeat(1)
+            // .yoyo(true)
+            // .repeatDelay(2000)
+            .onUpdate(function(){
+                
+                translateHead(this._object.new_x, this._object.new_y);
 
                 // Updating screen
                 stats.update();
                 renderer.render(scene, camera);    
             })
 
+        let robotImpact = new TWEEN.Tween( {theta:0, new_x: 0} )
+            .to( {theta: Math.PI/6, new_x: -10}, 2000)
+            .easing(TWEEN.Easing.Quintic.Out)
+            .onUpdate(function(){
+                // translateTorsoX(this._object.new_x);
+                // rotateTorsoWithMomentum(this._object.theta, 0, 0);
+                torsoImpact(this._object.new_x, this._object.theta);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            })
 
-        // let torso1 = new TWEEN.Tween( {theta:0} )
-        //     .to( {theta: Math.PI/6}, 500)
-        //     .onUpdate(function(){
-        //         rotateTorsoWithMomentum(this._object.theta);
-        //         // Updating screen
-        //         stats.update();
-        //         renderer.render(scene, camera);    
-        //     })
+        // ------------ PARTE 3 - FIM ------------
+
+        // headTurn1.chain(robotImpact);
+        // headTurn1.start();
+
+        // PARTE 3
+        headTurn2.chain(robotImpact);
+        headTurn1.chain(headTurn2);
+        rightLowerArm3.chain(headTurn1, rightUpperArm4, rightLowerArm4);
+        // rightUpperArm3.chain(rightLowerArm3);
+        headRight1.chain(rightUpperArm3, rightLowerArm3); 
 
         // PARTE 2
-        headRight1.chain(leftUpperArm2, leftLowerArm2);
-        leftLowerArm1.chain(headRight1);
-        leftUpperArm1.chain(leftLowerArm1);
-        rightLowerArm2.chain(leftUpperArm1); 
+        leftLowerArm1.chain(headRight1, leftUpperArm2, leftLowerArm2);
+        // leftUpperArm1.chain(leftLowerArm1);
+        headLeft1.chain(leftUpperArm1, leftLowerArm1); 
         
         // PARTE 1
-        headLeft1.chain(rightUpperArm2, rightLowerArm2);
-        rightLowerArm1.chain(headLeft1);
-        rightUpperArm1.chain(rightLowerArm1);
+        rightLowerArm1.chain(headLeft1, rightUpperArm2, rightLowerArm2);
+        // rightUpperArm1.chain(rightLowerArm1);
         rightUpperArm1.start(); 
+        rightLowerArm1.start();
     },
     animate: function(time) {
         window.requestAnimationFrame(this.animate.bind(this));
