@@ -286,14 +286,28 @@ Object.assign( SnoopAnimation.prototype, {
                 torso.updateMatrixWorld(true);
                 // Updating screen
                 stats.update();
+                renderer.render(scene, camera);
             })        
-           
+        
+        let fixUpperLeg = new TWEEN.Tween({ theta:  Math.PI / 30  })
+            .to({ theta: -Math.PI / 30 }, 1000)
+            .repeat(Infinity)
+            .yoyo(true)
+            .onUpdate(function () {
+                rotateRightUpperLeg(this._object.theta);
+                rotateLeftUpperLeg(this._object.theta);    
 
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);
+            })        
+        
+        
 
         lowerArmTween.chain(handTweenToLeft, lowerArmTweenCurva1,torsoDance,lowerArmLeft,leftHandTween);
         handTweenToLeft.chain(handTweenToRight);
         handTweenToRight.chain(handTweenToLeft);
-        torsoDance.chain(torsoDance2);
+        torsoDance.chain(torsoDance2,fixUpperLeg);
 
         //  upperArmTween.chain( ... ); this allows other related Tween animations occur at the same time
         lowerArmTween.start();
@@ -308,4 +322,3 @@ Object.assign( SnoopAnimation.prototype, {
         this.animate(0);
     }
 });
-
