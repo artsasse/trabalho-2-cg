@@ -160,15 +160,6 @@ function translateHead(x,y){
     part.updateMatrixWorld(true);
 }
 
-
-// function rotateTorsoWithMomentum(angle, pivot_x, pivot_y){
-//     rotateTorso(angle, pivot_x, pivot_y);
-//     rotateLeftUpperArm(-angle);
-//     rotateRightUpperArm(-angle);
-//     rotateLeftUpperLeg(-angle);
-//     rotateRightUpperLeg(-angle);
-// }
-
 function limbsImpact(angle){
     rotateLeftUpperArm(angle);
     rotateRightUpperArm(angle);
