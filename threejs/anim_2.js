@@ -245,40 +245,50 @@ Object.assign( SnoopAnimation.prototype, {
         let torsoDance = new TWEEN.Tween({ theta: 0 })
             .to({ theta: -Math.PI / 30 }, 1000)
             .onUpdate(function () {
-                rotateTorso(this._object.theta);
+                  let torso = robot.getObjectByName("torso");
+
+                  rotateAroundPivot(0, 0, this._object.theta, torso);
+                  rotateRightUpperLeg(-this._object.theta);
+                  rotateLeftUpperLeg(-this._object.theta);  
+
+                  torso.matrixAutoUpdate = false;
+
+
+              // Updating final world matrix (with parent transforms) - mandatory
+              torso.updateMatrixWorld(true);
                 // Updating screen
-                stats.update();
-                renderer.render(scene, camera);
-            })    
+              stats.update();
+              renderer.render(scene, camera);
+
+            }) 
 
         let torsoDance2 = new TWEEN.Tween({ theta:  -Math.PI / 30  })
             .to({ theta: Math.PI / 30 }, 1000)
             .repeat(Infinity)
             .yoyo(true)
             .onUpdate(function () {
-                rotateTorso(0, 0, this._object.theta);
+                let torso = robot.getObjectByName("torso");
+
+                rotateAroundPivot(0, 0, this._object.theta, torso);
+                rotateRightUpperLeg(-this._object.theta);
+                rotateLeftUpperLeg(-this._object.theta);
+
+                torso.matrixAutoUpdate = false;
+
+                // Updating final world matrix (with parent transforms) - mandatory
+                torso.updateMatrixWorld(true);
                 // Updating screen
                 stats.update();
                 renderer.render(scene, camera);
-            })        
+            })          
         
-        let fixUpperLeg = new TWEEN.Tween({ theta:  Math.PI / 30  })
-            .to({ theta: -Math.PI / 30 }, 1000)
-            .repeat(Infinity)
-            .yoyo(true)
-            .onUpdate(function () {
-                rotateRightUpperLeg(this._object.theta);
-                rotateLeftUpperLeg(this._object.theta);    
-                // Updating screen
-                stats.update();
-                renderer.render(scene, camera);
-            })        
         
         lowerArmTween.chain(lowerArmTweenCurva1,torsoDance,lowerArmLeft);
-        torsoDance.chain(torsoDance2,fixUpperLeg);
+        torsoDance.chain(torsoDance2);
 
         //  upperArmTween.chain( ... ); this allows other related Tween animations occur at the same time
         lowerArmTween.start();
+        torsoDance.start();
     },
     animate: function (time) {
         window.requestAnimationFrame(this.animate.bind(this));
