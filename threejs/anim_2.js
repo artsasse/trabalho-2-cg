@@ -105,9 +105,9 @@ function rotateRightLowerArm2(angle){
     part.updateMatrixWorld(true);
 }
 
-function rotateLeftLowerArm(angle){
+function rotateLeftLowerArm2(angle){
     let part = robot.getObjectByName("left_upper_arm").getObjectByName("lower_arm");       
-    rotateAroundPivot(-0.5, 1.5, angle, part);
+    rotateAroundPivot(0, 1.5, angle, part);
 
     part.matrixAutoUpdate = false;
 
@@ -218,10 +218,10 @@ Object.assign( SnoopAnimation.prototype, {
     init: function () {
 
         let lowerArmTween = new TWEEN.Tween({ theta: 0 })
-            .to({ theta: [5*(Math.PI / 4 )]}, 700) 
+            .to({ theta: [-5*(Math.PI / 4 )]}, 700) 
             .onUpdate(function () {
 
-                rotateRightLowerArm2(this._object.theta);
+                rotateLeftLowerArm2(this._object.theta);
 
                 // Updating screen
                 stats.update();
@@ -229,24 +229,24 @@ Object.assign( SnoopAnimation.prototype, {
             })
 
         // Por que o efeito das rotacoes nao persiste quando � com o mesmo objeto?
-        let lowerArmTweenCurva1 = new TWEEN.Tween({ theta: 5*(Math.PI / 4) })
-            .to({ theta: 3*(Math.PI/4)}, 700)
+        let lowerArmTweenCurva1 = new TWEEN.Tween({ theta: -5*(Math.PI / 4) })
+            .to({ theta: -3*(Math.PI/4)}, 700)
             .repeat(Infinity)
             .yoyo(true)
             .onUpdate(function () {
                 
-                rotateRightLowerArm2(this._object.theta);
+                rotateLeftLowerArm2(this._object.theta);
                 // Updating screen
                 stats.update();
                 renderer.render(scene, camera);
             })
 
-        let lowerArmLeft = new TWEEN.Tween( {theta:0} )
+        let lowerArmRight = new TWEEN.Tween( {theta:0} )
             .to( {theta: -Math.PI/24}, 1000)
             .repeat(Infinity)
             .yoyo(true)
             .onUpdate(function(){
-                rotateLeftLowerArm(this._object.theta);
+                rotateRightLowerArm(this._object.theta);
                 // Updating screen
                 stats.update();
                 renderer.render(scene, camera);    
@@ -293,7 +293,7 @@ Object.assign( SnoopAnimation.prototype, {
             })          
         
         
-        lowerArmTween.chain(lowerArmTweenCurva1,torsoDance,lowerArmLeft);
+        lowerArmTween.chain(lowerArmTweenCurva1,torsoDance,lowerArmRight);
         torsoDance.chain(torsoDance2);
 
         //  upperArmTween.chain( ... ); this allows other related Tween animations occur at the same time
