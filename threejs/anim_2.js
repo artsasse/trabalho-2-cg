@@ -95,6 +95,16 @@ function rotateRightLowerArm(angle){
     part.updateMatrixWorld(true);
 }
 
+function rotateRightLowerArm2(angle){
+    let part = robot.getObjectByName("right_upper_arm").getObjectByName("lower_arm");       
+    rotateAroundPivot(0, 1.5, angle, part);
+
+    part.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    part.updateMatrixWorld(true);
+}
+
 function rotateLeftLowerArm(angle){
     let part = robot.getObjectByName("left_upper_arm").getObjectByName("lower_arm");       
     rotateAroundPivot(-0.5, 1.5, angle, part);
@@ -211,7 +221,7 @@ Object.assign( SnoopAnimation.prototype, {
             .to({ theta: [5*(Math.PI / 4 )]}, 700) 
             .onUpdate(function () {
 
-                rotateRightLowerArm(this._object.theta);
+                rotateRightLowerArm2(this._object.theta);
 
                 // Updating screen
                 stats.update();
@@ -225,7 +235,7 @@ Object.assign( SnoopAnimation.prototype, {
             .yoyo(true)
             .onUpdate(function () {
                 
-                rotateRightLowerArm(this._object.theta);
+                rotateRightLowerArm2(this._object.theta);
                 // Updating screen
                 stats.update();
                 renderer.render(scene, camera);
