@@ -1,4 +1,5 @@
 function SnoopAnimation() { }
+// inspirado em https://youtu.be/RaCodgL9cvk?t=29
 
 function rotateAroundPivot(pivot_x, pivot_y, angle, element){
     ele_mat = element.matrix;
