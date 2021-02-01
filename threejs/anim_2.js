@@ -85,6 +85,45 @@ function rotateLeftUpperArm(angle){
     part.updateMatrixWorld(true);
 }
 
+function rotateRightUpperArm2(angle, y){
+
+    let element = robot.getObjectByName("right_upper_arm");
+    ele_mat = element.matrix;
+    ele_mat.makeRotationZ(angle);
+
+    // Como o método makeRotationZ reseta a matriz local do objeto, temos que restaurar
+    // as coordenadas antigas dele com uma translacao, exceto para o y nesse caso
+    old_x = element.position.x;
+    old_z = element.position.z;
+    new_position_mat = new THREE.Matrix4().makeTranslation(old_x, y, old_z);
+    ele_mat.premultiply(new_position_mat);
+
+    element.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    element.updateMatrixWorld(true);
+}
+
+function rotateLeftUpperArm2(angle, y){
+
+    let element = robot.getObjectByName("left_upper_arm");
+    ele_mat = element.matrix;
+    ele_mat.makeRotationZ(angle);
+
+    // Como o método makeRotationZ reseta a matriz local do objeto, temos que restaurar
+    // as coordenadas antigas dele com uma translacao, exceto para o x que nesse caso represeta a translacao
+    // do torso no eixo x apos o impacto.
+    old_x = element.position.x;
+    old_z = element.position.z;
+    new_position_mat = new THREE.Matrix4().makeTranslation(old_x, y, old_z);
+    ele_mat.premultiply(new_position_mat);
+
+    element.matrixAutoUpdate = false;
+
+    // Updating final world matrix (with parent transforms) - mandatory
+    element.updateMatrixWorld(true);
+}
+
 function rotateRightLowerArm(angle){
     let part = robot.getObjectByName("right_upper_arm").getObjectByName("lower_arm");       
     rotateAroundPivot(0.5, 1.5, angle, part);
@@ -217,8 +256,58 @@ Object.assign( SnoopAnimation.prototype, {
 
     init: function () {
 
-        let lowerArmTween = new TWEEN.Tween({ theta: 0 })
-            .to({ theta: [-5*(Math.PI / 4 )]}, 700) 
+        let headTweenInitial = new TWEEN.Tween({ head_x: 0 })
+            .to({ head_x: 0.7}, 700) 
+            .onUpdate(function () {
+
+                translateHeadX(this._object.head_x);
+
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);
+            })
+
+        let headTweenLoop = new TWEEN.Tween({ head_x: 0.7 })
+            .to({ head_x: [0,-0.7]}, 1400) 
+            .repeat(Infinity)
+            .yoyo(true)
+            .onUpdate(function () {
+
+                translateHeadX(this._object.head_x);
+
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);
+            })
+
+        let upperArmsTweenInitial = new TWEEN.Tween({ theta: 0, shoulder_y: 0 })
+            .to({ theta: -Math.PI/30, shoulder_y: 1}, 700) 
+            .onUpdate(function () {
+
+                rotateLeftUpperArm2(this._object.theta, this._object.shoulder_y);
+                rotateRightUpperArm2(this._object.theta, this._object.shoulder_y);
+
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);
+            })
+
+        let upperArmsTweenLoop = new TWEEN.Tween({ theta: -Math.PI/30, shoulder_y: 1 })
+            .to({ theta: Math.PI/30, shoulder_y: [0,1]}, 1400) 
+            .repeat(Infinity)
+            .yoyo(true)
+            .onUpdate(function () {
+
+                rotateLeftUpperArm2(this._object.theta, this._object.shoulder_y);
+                rotateRightUpperArm2(this._object.theta, this._object.shoulder_y);
+
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);
+            })
+
+        let lowerArmTweenInitial = new TWEEN.Tween({ theta: 0 })
+            .to({ theta: -Math.PI}, 700) 
             .onUpdate(function () {
 
                 rotateLeftLowerArm2(this._object.theta);
@@ -229,8 +318,8 @@ Object.assign( SnoopAnimation.prototype, {
             })
 
         // Por que o efeito das rotacoes nao persiste quando � com o mesmo objeto?
-        let lowerArmTweenCurva1 = new TWEEN.Tween({ theta: -5*(Math.PI / 4) })
-            .to({ theta: -3*(Math.PI/4)}, 700)
+        let lowerArmTweenLoop = new TWEEN.Tween({ theta: -Math.PI })
+            .to({ theta: Math.PI }, 1400)
             .repeat(Infinity)
             .yoyo(true)
             .onUpdate(function () {
@@ -241,8 +330,17 @@ Object.assign( SnoopAnimation.prototype, {
                 renderer.render(scene, camera);
             })
 
-        let lowerArmRight = new TWEEN.Tween( {theta:0} )
-            .to( {theta: -Math.PI/24}, 1000)
+        let lowerArmRightInitial = new TWEEN.Tween( {theta:0} )
+            .to( {theta: -Math.PI/20}, 700)
+            .onUpdate(function(){
+                rotateRightLowerArm(this._object.theta);
+                // Updating screen
+                stats.update();
+                renderer.render(scene, camera);    
+            }) 
+
+        let lowerArmRightLoop = new TWEEN.Tween( {theta: -Math.PI/20} )
+            .to( {theta: 0}, 1400)
             .repeat(Infinity)
             .yoyo(true)
             .onUpdate(function(){
@@ -253,7 +351,7 @@ Object.assign( SnoopAnimation.prototype, {
             }) 
 
         let torsoDance = new TWEEN.Tween({ theta: 0 })
-            .to({ theta: -Math.PI / 30 }, 1000)
+            .to({ theta: -Math.PI / 30 }, 700)
             .onUpdate(function () {
                   let torso = robot.getObjectByName("torso");
 
@@ -273,7 +371,7 @@ Object.assign( SnoopAnimation.prototype, {
             }) 
 
         let torsoDance2 = new TWEEN.Tween({ theta:  -Math.PI / 30  })
-            .to({ theta: Math.PI / 30 }, 1000)
+            .to({ theta: Math.PI / 30 }, 1400)
             .repeat(Infinity)
             .yoyo(true)
             .onUpdate(function () {
@@ -292,13 +390,18 @@ Object.assign( SnoopAnimation.prototype, {
                 renderer.render(scene, camera);
             })          
         
-        
-        lowerArmTween.chain(lowerArmTweenCurva1,torsoDance,lowerArmRight);
+        lowerArmRightInitial.chain(lowerArmRightLoop);
+        lowerArmTweenInitial.chain(lowerArmTweenLoop);
         torsoDance.chain(torsoDance2);
+        upperArmsTweenInitial.chain(upperArmsTweenLoop);
+        headTweenInitial.chain(headTweenLoop);
 
-        //  upperArmTween.chain( ... ); this allows other related Tween animations occur at the same time
-        lowerArmTween.start();
         torsoDance.start();
+        lowerArmTweenInitial.start();
+        upperArmsTweenInitial.start();
+        headTweenInitial.start();
+        lowerArmRightInitial.start();
+        
     },
     animate: function (time) {
         window.requestAnimationFrame(this.animate.bind(this));
